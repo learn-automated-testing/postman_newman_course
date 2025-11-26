@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -73,24 +73,27 @@ jobs:
     name: Publish HTML Report
     needs: [test-cli, test-javascript]
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.ref == 'refs/heads/main'
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download CLI report
         uses: actions/download-artifact@v4
         with:
           name: newman-report-cli
-          path: public/cli
+          path: gh-pages/cli
 
       - name: Download JS report
         uses: actions/download-artifact@v4
         with:
           name: newman-report-js
-          path: public/js
+          path: gh-pages/js
 
       - name: Create index page
         run: |
-          cat > public/index.html << 'EOF'
+          cat > gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
@@ -109,16 +112,11 @@ jobs:
           </body>
           </html>
           EOF
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-        with:
-          enablement: true
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: public/
+          touch gh-pages/.nojekyll
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          force_orphan: true
