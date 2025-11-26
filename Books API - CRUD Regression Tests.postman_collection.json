@@ -1,0 +1,825 @@
+{
+	"info": {
+		"_postman_id": "cd95089d-e430-4303-8c1e-a058f57e851f",
+		"name": "Books API - CRUD Regression Tests",
+		"description": "A comprehensive regression test collection for the Books API.\n\n## How Variable Chaining Works\n\nThis collection demonstrates how to pass data between requests:\n\n1. **Create** - POST creates a book and saves the `id` to a collection variable\n2. **Read** - GET uses `{{bookId}}` to fetch the created book\n3. **Update** - PUT uses `{{bookId}}` to modify the book\n4. **Delete** - DELETE uses `{{bookId}}` to remove the book\n5. **Verify Delete** - GET confirms the book no longer exists\n\n## Setup\n\n1. Set your `baseUrl` and `apiKey` in the collection variables\n2. Set your `studentId` (e.g., 'demo' or 'student1')\n3. Run the collection in order using the Collection Runner\n\n## Learning Objectives\n\n- Using environment/collection variables\n- Extracting data from responses with `pm.response.json()`\n- Setting variables with `pm.collectionVariables.set()`\n- Writing test assertions\n- Chaining requests together",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29750971"
+	},
+	"item": [
+		{
+			"name": "1. Health Check",
+			"item": [
+				{
+					"name": "Ping API",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response time is acceptable",
+									"pm.test('Response time is less than 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Test 3: Response has expected structure",
+									"pm.test('Response has message property', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});",
+									"",
+									"console.log('API Health Check passed!');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/practice/ping",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"ping"
+							]
+						},
+						"description": "Health check endpoint - no API key required.\n\nThis is a simple ping to verify the API is running."
+					},
+					"response": []
+				}
+			],
+			"description": "Basic health check before running CRUD tests"
+		},
+		{
+			"name": "2. CRUD Operations",
+			"item": [
+				{
+					"name": "CREATE - Add New Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code (201 Created or 200 OK)",
+									"pm.test('Status code is 200 or 201', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"// Test 2: Response contains the created book",
+									"pm.test('Response contains book with id', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData.id).to.be.a('string');",
+									"});",
+									"",
+									"// Test 3: Book has correct title",
+									"pm.test('Book has correct title', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.eql('Test Book for Regression');",
+									"});",
+									"",
+									"// IMPORTANT: Save the book ID for subsequent requests",
+									"const jsonData = pm.response.json();",
+									"if (jsonData.id) {",
+									"    pm.collectionVariables.set('bookId', jsonData.bookId);",
+									"    console.log('Saved bookId:', jsonData.id);",
+									"}",
+									"",
+									"// Also save original values for comparison in UPDATE test",
+									"pm.collectionVariables.set('originalTitle', jsonData.title);",
+									"pm.collectionVariables.set('originalAuthor', jsonData.author);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate a unique timestamp for this test run",
+									"const timestamp = new Date().toISOString();",
+									"pm.collectionVariables.set('testTimestamp', timestamp);",
+									"console.log('Starting CRUD test at:', timestamp);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Book for Regression test 1\",\n    \"author\": \"Test Author\",\n    \"year\": 2024,\n    \"genre\": \"Testing\",\n    \"isbn\": \"978-0-00-000000-0\",\n    \"price\": \"12\",\n    \"category\": \"fiction\",\n    \"description\": \"nice book\",\n    \"stock\": \"true\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/practice/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books"
+							]
+						},
+						"description": "**CREATE** - First step in CRUD regression test.\n\nThis request:\n1. Creates a new book\n2. Extracts the `id` from the response\n3. Saves it to `{{bookId}}` collection variable\n\n**Variable Chaining Code:**\n```javascript\nconst jsonData = pm.response.json();\npm.collectionVariables.set('bookId', jsonData.id);\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "READ - Get Created Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Verify we got the correct book",
+									"pm.test('Retrieved book has correct id', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const expectedId = pm.collectionVariables.get('bookId');",
+									"    pm.expect(jsonData.id).to.eql(expectedId);",
+									"});",
+									"",
+									"// Test 3: Verify book data matches what we created",
+									"pm.test('Book data matches created data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.eql('Test Book for Regression');",
+									"    pm.expect(jsonData.author).to.eql('Test Author');",
+									"    pm.expect(jsonData.year).to.eql(2024);",
+									"});",
+									"",
+									"// Test 4: Response has all expected properties",
+									"pm.test('Book has all required properties', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('title');",
+									"    pm.expect(jsonData).to.have.property('author');",
+									"});",
+									"",
+									"console.log('READ test passed - Book retrieved successfully');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"{{bookId}}"
+							]
+						},
+						"description": "**READ** - Second step in CRUD regression test.\n\nThis request:\n1. Uses `{{bookId}}` from the previous CREATE request\n2. Verifies the book exists and has correct data\n\n**Using Variables in URL:**\n```\n{{baseUrl}}/practice/books/{{bookId}}\n```\n\nThe `{{bookId}}` is automatically replaced with the value saved in the CREATE step."
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE - Modify Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Verify book was updated",
+									"pm.test('Book title was updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.eql('Updated Book Title');",
+									"});",
+									"",
+									"// Test 3: Verify author was updated",
+									"pm.test('Book author was updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.author).to.eql('Updated Author');",
+									"});",
+									"",
+									"// Test 4: Verify ID remained the same",
+									"pm.test('Book ID remained unchanged', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const expectedId = pm.collectionVariables.get('bookId');",
+									"    pm.expect(jsonData.id).to.eql(expectedId);",
+									"});",
+									"",
+									"// Test 5: Verify new field was added",
+									"pm.test('New field (pages) was added', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.pages).to.eql(350);",
+									"});",
+									"",
+									"console.log('UPDATE test passed - Book modified successfully');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Book Title\",\n    \"author\": \"Updated Author\",\n    \"year\": 2025,\n    \"genre\": \"Updated Genre\",\n    \"isbn\": \"978-0-00-000000-1\",\n    \"pages\": 350\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"{{bookId}}"
+							]
+						},
+						"description": "**UPDATE** - Third step in CRUD regression test.\n\nThis request:\n1. Uses `{{bookId}}` to identify which book to update\n2. Sends new data to replace the existing book\n3. Verifies the changes were applied\n\n**Testing Updates:**\n```javascript\npm.test('Book title was updated', function () {\n    const jsonData = pm.response.json();\n    pm.expect(jsonData.title).to.eql('Updated Book Title');\n});\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "READ - Verify Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Verify update persisted",
+									"pm.test('Updated title persisted', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.eql('Updated Book Title');",
+									"});",
+									"",
+									"// Test 3: Verify updated author persisted",
+									"pm.test('Updated author persisted', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.author).to.eql('Updated Author');",
+									"});",
+									"",
+									"// Test 4: Original title is no longer present",
+									"pm.test('Original title is replaced', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.not.eql('Test Book for Regression');",
+									"});",
+									"",
+									"console.log('UPDATE verification passed - Changes persisted');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"{{bookId}}"
+							]
+						},
+						"description": "**READ after UPDATE** - Verification step.\n\nThis request confirms that the UPDATE actually persisted by reading the book again and checking:\n1. New values are present\n2. Old values are replaced\n\nThis is an important regression test pattern: always verify updates by reading back the data."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE - Remove Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code (200 OK or 204 No Content)",
+									"pm.test('Status code is 200 or 204', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+									"});",
+									"",
+									"// Test 2: If response has body, check for success message",
+									"if (pm.response.text()) {",
+									"    pm.test('Response indicates success', function () {",
+									"        const jsonData = pm.response.json();",
+									"        // Check for success indicator (varies by API)",
+									"        pm.expect(jsonData.message || jsonData.deleted || jsonData.success).to.exist;",
+									"    });",
+									"}",
+									"",
+									"console.log('DELETE test passed - Book removed');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"{{bookId}}"
+							]
+						},
+						"description": "**DELETE** - Fourth step in CRUD regression test.\n\nThis request:\n1. Uses `{{bookId}}` to identify which book to delete\n2. Removes the book from the database\n3. Should return 200 OK or 204 No Content"
+					},
+					"response": []
+				},
+				{
+					"name": "READ - Verify Delete (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code is 404 (Not Found)",
+									"pm.test('Status code is 404 - Book not found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"// Test 2: Response indicates book doesn't exist",
+									"pm.test('Response indicates book not found', function () {",
+									"    const jsonData = pm.response.json();",
+									"    // Check for error message",
+									"    pm.expect(jsonData.error || jsonData.message).to.exist;",
+									"});",
+									"",
+									"console.log('DELETE verification passed - Book no longer exists');",
+									"console.log('CRUD Regression Test COMPLETE!');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"{{bookId}}"
+							]
+						},
+						"description": "**READ after DELETE** - Final verification step.\n\nThis request confirms that the DELETE actually worked by trying to read the deleted book. The expected result is:\n- Status code: 404 (Not Found)\n- Error message indicating book doesn't exist\n\n**Testing for Expected Failures:**\n```javascript\npm.test('Status code is 404', function () {\n    pm.response.to.have.status(404);\n});\n```\n\nThis completes the CRUD regression test cycle!"
+					},
+					"response": []
+				}
+			],
+			"description": "Complete CRUD (Create, Read, Update, Delete) regression test flow with variable chaining.\n\n**Flow:**\n1. CREATE → saves `bookId`\n2. READ → uses `{{bookId}}`\n3. UPDATE → uses `{{bookId}}`\n4. READ → verify update\n5. DELETE → uses `{{bookId}}`\n6. READ → verify delete (expect 404)"
+		},
+		{
+			"name": "3. List Operations",
+			"item": [
+				{
+					"name": "GET All Books",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response is an array",
+									"pm.test('Response is an array', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"// Test 3: Save count for later comparison",
+									"const jsonData = pm.response.json();",
+									"pm.collectionVariables.set('initialBookCount', jsonData.length);",
+									"console.log('Total books:', jsonData.length);",
+									"",
+									"// Test 4: If books exist, verify structure",
+									"if (jsonData.length > 0) {",
+									"    pm.test('Books have required properties', function () {",
+									"        const firstBook = jsonData[0];",
+									"        pm.expect(firstBook).to.have.property('id');",
+									"        pm.expect(firstBook).to.have.property('title');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books"
+							]
+						},
+						"description": "Get all books for the current student.\n\nThis saves the count to `{{initialBookCount}}` for comparison in other tests."
+					},
+					"response": []
+				}
+			],
+			"description": "Operations on the book collection"
+		},
+		{
+			"name": "4. Reset Data",
+			"item": [
+				{
+					"name": "Reset Student Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Response indicates success",
+									"pm.test('Reset was successful', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message || jsonData.success).to.exist;",
+									"});",
+									"",
+									"console.log('Data reset complete - Ready for new test run');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/reset",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"reset"
+							]
+						},
+						"description": "Reset the student's data to default state.\n\nUse this:\n- Before running tests to ensure clean state\n- After tests to clean up\n- When you want to start fresh"
+					},
+					"response": []
+				}
+			],
+			"description": "Reset data to default state"
+		},
+		{
+			"name": "5. Error Handling Tests",
+			"item": [
+				{
+					"name": "GET Non-existent Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 404",
+									"pm.test('Status code is 404', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"// Test 2: Response has error message",
+									"pm.test('Response has error message', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error || jsonData.message).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/non-existent-id-12345",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"non-existent-id-12345"
+							]
+						},
+						"description": "Test error handling for non-existent resources.\n\nExpected: 404 Not Found"
+					},
+					"response": []
+				},
+				{
+					"name": "POST Invalid Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 400 Bad Request",
+									"pm.test('Status code is 400', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test 2: Response has error details",
+									"pm.test('Response has error details', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error || jsonData.message).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"invalid\": \"data without required fields\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/practice/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books"
+							]
+						},
+						"description": "Test validation by sending invalid/incomplete data.\n\nExpected: 400 Bad Request"
+					},
+					"response": []
+				},
+				{
+					"name": "Request Without API Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Should return 403 Forbidden",
+									"pm.test('Status code is 403', function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"// Test 2: Response indicates missing API key",
+									"pm.test('Response indicates authentication required', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('Forbidden');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books"
+							]
+						},
+						"description": "Test that API key is required.\n\nExpected: 403 Forbidden"
+					},
+					"response": []
+				}
+			],
+			"description": "Test error scenarios and edge cases"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"// Runs before every request in the collection",
+					"",
+					"// Log which request is running",
+					"console.log('Running:', pm.info.requestName);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"// Runs after every request in the collection",
+					"",
+					"// Log response time for all requests",
+					"console.log('Response time:', pm.response.responseTime + 'ms');"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://lynbzclez2.execute-api.eu-west-2.amazonaws.com/v1",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "demo-api-key-practiceautomatedtesting",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "demo",
+			"type": "string"
+		},
+		{
+			"key": "bookId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "testTimestamp",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "originalTitle",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "originalAuthor",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "initialBookCount",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

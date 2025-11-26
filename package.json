@@ -1,0 +1,14 @@
+{
+  "name": "postman-newman-tests",
+  "version": "1.0.0",
+  "description": "Books API CRUD Regression Tests with Newman",
+  "scripts": {
+    "test": "newman run \"Books API - CRUD Regression Tests.postman_collection.json\"",
+    "test:report": "newman run \"Books API - CRUD Regression Tests.postman_collection.json\" --reporters cli,htmlextra --reporter-htmlextra-export reports/newman-report.html",
+    "test:js": "node run-tests.js"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
