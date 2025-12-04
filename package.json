@@ -4,11 +4,12 @@
   "description": "Books API CRUD Regression Tests with Newman",
   "scripts": {
     "test": "newman run \"Books API - CRUD Regression Tests.postman_collection.json\"",
-    "test:report": "newman run \"Books API - CRUD Regression Tests.postman_collection.json\" --reporters cli,htmlextra --reporter-htmlextra-export reports/newman-report.html",
+    "test:report": "newman run \"Books API - CRUD Regression Tests.postman_collection.json\" --reporters cli,htmlextra,junit --reporter-htmlextra-export reports/newman-report.html --reporter-junit-export reports/newman-report.xml",
     "test:js": "node run-tests.js"
   },
   "devDependencies": {
     "newman": "^6.2.1",
-    "newman-reporter-htmlextra": "^1.23.1"
+    "newman-reporter-htmlextra": "^1.23.1",
+    "newman-reporter-junit": "^2.0.0"
   }
 }
