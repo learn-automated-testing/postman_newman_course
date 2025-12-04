@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite id="0" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="1. Health Check" name="Ping API" tests="3" failures="0" errors="0" timestamp="2025-12-04T11:12:22.124" time="0.399">
+    <testcase classname="1. Health Check / Ping API" name="Status code is 200" time="0.133"/>
+    <testcase classname="1. Health Check / Ping API" name="Response time is less than 2000ms" time="0.133"/>
+    <testcase classname="1. Health Check / Ping API" name="Response has message property" time="0.133"/>
+  </testsuite>
+  <testsuite id="1" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="2. CRUD Operations" name="CREATE - Add New Book" tests="3" failures="0" errors="0" timestamp="2025-12-04T11:12:22.523" time="0.290">
+    <testcase classname="2. CRUD Operations / CREATE - Add New Book" name="Status code is 200 or 201" time="0.097"/>
+    <testcase classname="2. CRUD Operations / CREATE - Add New Book" name="Response contains book with id" time="0.097"/>
+    <testcase classname="2. CRUD Operations / CREATE - Add New Book" name="Book has correct title" time="0.097">
+      <failure type="AssertionError" message="expected 'Test Book for Regression test 1' to deeply equal 'Test Book for Regression'">
+        <![CDATA[AssertionError: expected 'Test Book for Regression test 1' to deeply equal 'Test Book for Regression'
+   at Object.eval sandbox-script.js:3:2)]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite id="2" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="2. CRUD Operations" name="READ - Get Created Book" tests="4" failures="0" errors="0" timestamp="2025-12-04T11:12:22.813" time="0.266">
+    <testcase classname="2. CRUD Operations / READ - Get Created Book" name="Status code is 200" time="0.067"/>
+    <testcase classname="2. CRUD Operations / READ - Get Created Book" name="Retrieved book has correct id" time="0.067">
+      <failure type="AssertionError" message="expected 'demo_5f86720f' to deeply equal '5f86720f'">
+        <![CDATA[AssertionError: expected 'demo_5f86720f' to deeply equal '5f86720f'
+   at Object.eval sandbox-script.js:2:3)]]>
+      </failure>
+    </testcase>
+    <testcase classname="2. CRUD Operations / READ - Get Created Book" name="Book data matches created data" time="0.067">
+      <failure type="AssertionError" message="expected 'Test Book for Regression test 1' to deeply equal 'Test Book for Regression'">
+        <![CDATA[AssertionError: expected 'Test Book for Regression test 1' to deeply equal 'Test Book for Regression'
+   at Object.eval sandbox-script.js:3:3)]]>
+      </failure>
+    </testcase>
+    <testcase classname="2. CRUD Operations / READ - Get Created Book" name="Book has all required properties" time="0.067"/>
+  </testsuite>
+  <testsuite id="3" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="2. CRUD Operations" name="UPDATE - Modify Book" tests="5" failures="0" errors="0" timestamp="2025-12-04T11:12:23.079" time="0.310">
+    <testcase classname="2. CRUD Operations / UPDATE - Modify Book" name="Status code is 200" time="0.062"/>
+    <testcase classname="2. CRUD Operations / UPDATE - Modify Book" name="Book title was updated" time="0.062"/>
+    <testcase classname="2. CRUD Operations / UPDATE - Modify Book" name="Book author was updated" time="0.062"/>
+    <testcase classname="2. CRUD Operations / UPDATE - Modify Book" name="Book ID remained unchanged" time="0.062">
+      <failure type="AssertionError" message="expected 'demo_5f86720f' to deeply equal '5f86720f'">
+        <![CDATA[AssertionError: expected 'demo_5f86720f' to deeply equal '5f86720f'
+   at Object.eval sandbox-script.js:4:4)]]>
+      </failure>
+    </testcase>
+    <testcase classname="2. CRUD Operations / UPDATE - Modify Book" name="New field (pages) was added" time="0.062"/>
+  </testsuite>
+  <testsuite id="4" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="2. CRUD Operations" name="READ - Verify Update" tests="4" failures="0" errors="0" timestamp="2025-12-04T11:12:23.389" time="0.273">
+    <testcase classname="2. CRUD Operations / READ - Verify Update" name="Status code is 200" time="0.068"/>
+    <testcase classname="2. CRUD Operations / READ - Verify Update" name="Updated title persisted" time="0.068"/>
+    <testcase classname="2. CRUD Operations / READ - Verify Update" name="Updated author persisted" time="0.068"/>
+    <testcase classname="2. CRUD Operations / READ - Verify Update" name="Original title is replaced" time="0.068"/>
+  </testsuite>
+  <testsuite id="5" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="2. CRUD Operations" name="DELETE - Remove Book" tests="2" failures="0" errors="0" timestamp="2025-12-04T11:12:23.662" time="0.368">
+    <testcase classname="2. CRUD Operations / DELETE - Remove Book" name="Status code is 200 or 204" time="0.184"/>
+    <testcase classname="2. CRUD Operations / DELETE - Remove Book" name="Response indicates success" time="0.184"/>
+  </testsuite>
+  <testsuite id="6" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="2. CRUD Operations" name="READ - Verify Delete (Should Fail)" tests="2" failures="0" errors="0" timestamp="2025-12-04T11:12:24.030" time="0.273">
+    <testcase classname="2. CRUD Operations / READ - Verify Delete (Should Fail)" name="Status code is 404 - Book not found" time="0.137"/>
+    <testcase classname="2. CRUD Operations / READ - Verify Delete (Should Fail)" name="Response indicates book not found" time="0.137"/>
+  </testsuite>
+  <testsuite id="7" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="3. List Operations" name="GET All Books" tests="3" failures="0" errors="0" timestamp="2025-12-04T11:12:24.303" time="0.120">
+    <testcase classname="3. List Operations / GET All Books" name="Status code is 200" time="0.040"/>
+    <testcase classname="3. List Operations / GET All Books" name="Response is an array" time="0.040"/>
+    <testcase classname="3. List Operations / GET All Books" name="Books have required properties" time="0.040"/>
+  </testsuite>
+  <testsuite id="8" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="4. Reset Data" name="Reset Student Data" tests="2" failures="0" errors="0" timestamp="2025-12-04T11:12:24.423" time="0.679">
+    <testcase classname="4. Reset Data / Reset Student Data" name="Status code is 200" time="0.340"/>
+    <testcase classname="4. Reset Data / Reset Student Data" name="Reset was successful" time="0.340"/>
+  </testsuite>
+  <testsuite id="9" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="5. Error Handling Tests" name="GET Non-existent Book" tests="2" failures="0" errors="0" timestamp="2025-12-04T11:12:25.102" time="0.339">
+    <testcase classname="5. Error Handling Tests / GET Non-existent Book" name="Status code is 404" time="0.170"/>
+    <testcase classname="5. Error Handling Tests / GET Non-existent Book" name="Response has error message" time="0.170"/>
+  </testsuite>
+  <testsuite id="10" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="5. Error Handling Tests" name="POST Invalid Data" tests="2" failures="0" errors="0" timestamp="2025-12-04T11:12:25.441" time="0.333">
+    <testcase classname="5. Error Handling Tests / POST Invalid Data" name="Status code is 400" time="0.167"/>
+    <testcase classname="5. Error Handling Tests / POST Invalid Data" name="Response has error details" time="0.167"/>
+  </testsuite>
+  <testsuite id="11" hostname="https://lynbzclez2.execute-api.eu-west-2.amazonaws.com" package="5. Error Handling Tests" name="Request Without API Key" tests="2" failures="0" errors="0" timestamp="2025-12-04T11:12:25.774" time="0.320">
+    <testcase classname="5. Error Handling Tests / Request Without API Key" name="Status code is 403" time="0.160"/>
+    <testcase classname="5. Error Handling Tests / Request Without API Key" name="Response indicates authentication required" time="0.160"/>
+  </testsuite>
+</testsuites>
