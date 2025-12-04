@@ -1,0 +1,374 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Books API - Data Driven Tests",
+		"description": "A data-driven test collection for the Books API using CSV data files.\n\n## How Data-Driven Testing Works\n\nThis collection uses external CSV data to run the same tests multiple times with different data:\n\n1. Each row in the CSV file represents one iteration\n2. Column headers become variable names (e.g., `{{title}}`, `{{author}}`)\n3. Newman runs the collection once per row\n\n## Running with Newman\n\n```bash\nnewman run \"Books API - Data Driven Tests.postman_collection.json\" -d books_testdata.csv\n```\n\n## CSV File Format\n\n```csv\ntitle,author,year,genre,isbn,price,category,description,stock\nThe Great Gatsby,F. Scott Fitzgerald,1925,Fiction,...\n1984,George Orwell,1949,Dystopian,...\n```\n\n## Learning Objectives\n\n- Using iteration data from CSV files\n- Accessing data variables with `pm.iterationData.get()`\n- Running multiple test iterations\n- Validating different data sets with the same tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Setup",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('API is available', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log('Health check passed - API is ready');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/practice/ping",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"ping"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Initial setup and health check"
+		},
+		{
+			"name": "2. Data Driven CRUD",
+			"item": [
+				{
+					"name": "CREATE - Add Book from CSV Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200 or 201', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"// Test 2: Response contains book with id",
+									"pm.test('Response contains book with id', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.bookId || jsonData.id).to.exist;",
+									"});",
+									"",
+									"// Test 3: Book has correct title from CSV",
+									"pm.test('Book has correct title from CSV data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const expectedTitle = pm.iterationData.get('title');",
+									"    pm.expect(jsonData.title).to.eql(expectedTitle);",
+									"});",
+									"",
+									"// Test 4: Book has correct author from CSV",
+									"pm.test('Book has correct author from CSV data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const expectedAuthor = pm.iterationData.get('author');",
+									"    pm.expect(jsonData.author).to.eql(expectedAuthor);",
+									"});",
+									"",
+									"// Save book ID for subsequent requests",
+									"const jsonData = pm.response.json();",
+									"const bookId = jsonData.bookId || jsonData.id;",
+									"if (bookId) {",
+									"    pm.collectionVariables.set('bookId', bookId);",
+									"    console.log('Created book:', pm.iterationData.get('title'), '- ID:', bookId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Log current iteration data",
+									"console.log('--- Data Driven Test Iteration ---');",
+									"console.log('Title:', pm.iterationData.get('title'));",
+									"console.log('Author:', pm.iterationData.get('author'));",
+									"console.log('Year:', pm.iterationData.get('year'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"{{title}}\",\n    \"author\": \"{{author}}\",\n    \"year\": {{year}},\n    \"genre\": \"{{genre}}\",\n    \"isbn\": \"{{isbn}}\",\n    \"price\": \"{{price}}\",\n    \"category\": \"{{category}}\",\n    \"description\": \"{{description}}\",\n    \"stock\": \"{{stock}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/practice/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books"
+							]
+						},
+						"description": "**CREATE with CSV Data**\n\nThis request uses data from the CSV file:\n- `{{title}}` - Book title from CSV\n- `{{author}}` - Author name from CSV\n- `{{year}}` - Publication year from CSV\n- etc.\n\n**Accessing Iteration Data in Tests:**\n```javascript\nconst expectedTitle = pm.iterationData.get('title');\npm.expect(jsonData.title).to.eql(expectedTitle);\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "READ - Verify Created Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test 2: Verify title matches CSV data",
+									"pm.test('Title matches CSV data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const expectedTitle = pm.iterationData.get('title');",
+									"    pm.expect(jsonData.title).to.eql(expectedTitle);",
+									"});",
+									"",
+									"// Test 3: Verify author matches CSV data",
+									"pm.test('Author matches CSV data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const expectedAuthor = pm.iterationData.get('author');",
+									"    pm.expect(jsonData.author).to.eql(expectedAuthor);",
+									"});",
+									"",
+									"// Test 4: Verify year matches CSV data",
+									"pm.test('Year matches CSV data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const expectedYear = parseInt(pm.iterationData.get('year'));",
+									"    pm.expect(jsonData.year).to.eql(expectedYear);",
+									"});",
+									"",
+									"console.log('Verified book:', pm.iterationData.get('title'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"{{bookId}}"
+							]
+						},
+						"description": "**READ and Verify CSV Data**\n\nThis request verifies that the created book matches the original CSV data."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE - Clean Up Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200 or 204', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+									"});",
+									"",
+									"console.log('Deleted book:', pm.iterationData.get('title'));",
+									"console.log('--- End of iteration ---');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/practice/books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books",
+								"{{bookId}}"
+							]
+						},
+						"description": "**DELETE - Clean Up**\n\nRemove the book after testing to keep the database clean for the next iteration."
+					},
+					"response": []
+				}
+			],
+			"description": "Data-driven CRUD tests using CSV data.\n\nEach iteration:\n1. Creates a book with CSV data\n2. Reads and verifies the book\n3. Deletes the book"
+		},
+		{
+			"name": "3. Bulk Create (All CSV Books)",
+			"item": [
+				{
+					"name": "CREATE - Bulk Add Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test 1: Check status code",
+									"pm.test('Status code is 200 or 201', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"// Test 2: Response contains book",
+									"pm.test('Book created successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.bookId || jsonData.id).to.exist;",
+									"    pm.expect(jsonData.title).to.eql(pm.iterationData.get('title'));",
+									"});",
+									"",
+									"// Log progress",
+									"const jsonData = pm.response.json();",
+									"console.log('Bulk created:', pm.iterationData.get('title'));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "X-Student-Id",
+								"value": "{{studentId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"{{title}}\",\n    \"author\": \"{{author}}\",\n    \"year\": {{year}},\n    \"genre\": \"{{genre}}\",\n    \"isbn\": \"{{isbn}}\",\n    \"price\": \"{{price}}\",\n    \"category\": \"{{category}}\",\n    \"description\": \"{{description}}\",\n    \"stock\": \"{{stock}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/practice/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"practice",
+								"books"
+							]
+						},
+						"description": "**Bulk Create Books**\n\nUse this folder to create all books from the CSV without deleting them.\n\nRun with: `newman run collection.json -d books_testdata.csv --folder \"3. Bulk Create (All CSV Books)\"`"
+					},
+					"response": []
+				}
+			],
+			"description": "Create all books from CSV without deleting.\n\nUseful for populating the database with test data."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"console.log('Request:', pm.info.requestName);",
+					"",
+					"// Log iteration info if running with data file",
+					"if (pm.iterationData) {",
+					"    console.log('Iteration:', pm.info.iteration + 1);",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"console.log('Response time:', pm.response.responseTime + 'ms');"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://lynbzclez2.execute-api.eu-west-2.amazonaws.com/v1",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "demo-api-key-practiceautomatedtesting",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "demo",
+			"type": "string"
+		},
+		{
+			"key": "bookId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
